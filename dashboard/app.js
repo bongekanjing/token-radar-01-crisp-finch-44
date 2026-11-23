@@ -192,6 +192,43 @@
         el('div', { class: 'fact' }, el('span', { text: 'Above floor, unlisted' }), el('b', { class: 'num', text: String(above) })),
         el('div', { class: 'fact' }, el('span', { text: 'Under the floor' }), el('b', { class: 'num', text: String(below) })),
         el('div', { class: 'fact' }, el('span', { text: 'Live, set aside' }), el('b', { class: 'num', text: String(DATA.live_size) }))
+      ),
+      errorStrip()
+    );
+  }
+
+  /**
+   * The error strip: the headline number a reader needs before trusting any row above.
+   *
+   * It is the honest summary of the panel below — the flat model's held-out error, the forward
+   * error of the four-term model that lost, and the dropdown's own note — in three tiles, so the
+   * page states how wrong it is before it states what it thinks.
+   */
+  function errorStrip() {
+    var E = DATA.evidence;
+    if (!E) return el('div', null);
+    var flat = E.kfold.filter(function (k) { return k.term.indexOf('flat') === 0; })[0];
+    var best = E.kfold.reduce(function (a, b) { return b.fold_error < a.fold_error ? b : a; }, E.kfold[0]);
+    var fw = E.forward.slice(-1)[0];
+    return el('div', { class: 'errstrip' },
+      el('div', { class: 'errtile' },
+        el('span', { text: 'Held out, flat model' }),
+        el('b', { class: 'num', text: flat ? 'x' + flat.fold_error.toFixed(2) : 'n/a' })
+      ),
+      el('div', { class: 'errtile' },
+        el('span', { text: 'Held out, best fit' }),
+        el('b', { class: 'num', text: 'x' + best.fold_error.toFixed(2) })
+      ),
+      el('div', { class: 'errtile bad' },
+        el('span', { text: 'That fit, a later year' }),
+        el('b', { class: 'num', text: fw ? 'x' + fw.with_terms.toFixed(2) : 'n/a' })
+      ),
+      el('div', { class: 'errtile' },
+        el('span', { text: 'Traded protocols measured' }),
+        el('b', { class: 'num', text: String(E.evidence_n) })
+      ),
+      el('div', { class: 'errnote' },
+        el('span', { text: 'A row\'s implied value is a claim at that width, not a forecast. The terms that looked better in-fold did worse forward, so the board prices with the flat multiple and says so.' })
       )
     );
   }
@@ -415,6 +452,88 @@
     }
   }
 
+  /**
+   * The evidence panel: the model's own backtest, printed with the way each figure was measured.
+   *
+   * The two tables are deliberately not merged. A k-fold figure and a forward figure answer
+   * different questions, and this page says so rather than quoting the better-looking one.
+   */
+  function evidencePanel() {
+    var E = DATA.evidence;
+    if (!E) return el('div', null);
+    var kf = el('table', { class: 'bench' },
+      el('thead', null, el('tr', null,
+        el('th', { text: 'Term, added in order' }),
+        el('th', { class: 'num', text: '5-fold error' })
+      )),
+      el('tbody', null, E.kfold.map(function (k) {
+        return el('tr', null,
+          el('td', { text: k.term }),
+          el('td', { class: 'num', text: 'x' + k.fold_error.toFixed(2) })
+        );
+      }))
+    );
+    var fw = el('table', { class: 'bench' },
+      el('thead', null, el('tr', null,
+        el('th', { text: 'Listed in' }),
+        el('th', { class: 'num', text: 'n' }),
+        el('th', { class: 'num', text: 'Flat' }),
+        el('th', { class: 'num', text: 'Four terms' })
+      )),
+      el('tbody', null, E.forward.map(function (f) {
+        return el('tr', null,
+          el('td', { text: String(f.year) }),
+          el('td', { class: 'num', text: String(f.n) }),
+          el('td', { class: 'num', text: 'x' + f.model.toFixed(2) }),
+          el('td', { class: 'num bad', text: 'x' + f.with_terms.toFixed(2) })
+        );
+      }))
+    );
+    var odds = el('table', { class: 'bench' },
+      el('thead', null, el('tr', null,
+        el('th', { text: 'Tokenless for' }),
+        el('th', { class: 'num', text: 'No token' }),
+        el('th', { class: 'num', text: 'Token trades' })
+      )),
+      el('tbody', null, E.odds.map(function (o) {
+        return el('tr', null,
+          el('td', { text: o.band }),
+          el('td', { class: 'num', text: String(o.tokenless) }),
+          el('td', { class: 'num', text: String(o.traded) })
+        );
+      }))
+    );
+    return el('section', { class: 'panel evidence' },
+      el('h2', { text: 'Why these numbers, and how wrong they are' }),
+      el('p', { text: 'The snapshot holds ' + E.evidence_n + ' protocols that already trade, out of ' + E.protocol_n + '. Their market cap over their TVL is the only evidence in the file about what a protocol is worth, so every figure below is measured on them and on nothing else.' }),
+      el('div', { class: 'two' },
+        el('div', null,
+          el('h3', { text: 'Does each term earn its place?' }),
+          kf,
+          el('p', { class: 'sub', text: E.kfold_note })
+        ),
+        el('div', null,
+          el('h3', { text: 'Does it survive a later year?' }),
+          fw,
+          el('p', { class: 'sub', text: E.forward_note })
+        )
+      ),
+      el('p', { class: 'verdict', text: E.verdict }),
+      el('div', { class: 'two' },
+        el('div', null,
+          el('h3', { text: 'How long protocols stay tokenless' }),
+          odds,
+          el('p', { class: 'sub', text: 'Counts at or above the $' + Math.round(DATA.floor_usd / 1e6) + 'M floor. A protocol that has run this long without a token is not proof it will not issue one, and the radar never says it will.' })
+        ),
+        el('div', null,
+          el('h3', { text: 'What the error means for a row' }),
+          el('p', { text: 'A fold error of x4.6 means the model\'s implied value is typically within a factor of about 4.6 of the real cap, in either direction. The Implied value column is a claim at that width, not a forecast, and the P25 to P75 band in each detail view is drawn at that width.' }),
+          el('p', { class: 'sub', text: 'Measured on ' + E.measured_on + ' by the entry\'s own lab, from this snapshot alone.' })
+        )
+      )
+    );
+  }
+
   function render() {
     app.textContent = '';
     var shell = el('div', { class: 'shell' });
@@ -423,6 +542,7 @@
     shell.appendChild(controls());
     shell.appendChild(state.tab === 'board' ? boardTable() : liveTable());
     if (state.tab === 'board') {
+      shell.appendChild(evidencePanel());
       shell.appendChild(benchmarkPanel());
       shell.appendChild(modelPanel());
     }

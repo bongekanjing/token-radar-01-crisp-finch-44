@@ -175,6 +175,8 @@ export interface RadarData {
   benchmarks: Benchmark[];
   rows: RadarRow[];
   live: LiveRow[];
+  /** The model's backtest, measured by the entry's own lab and committed beside the page. */
+  evidence?: unknown;
 }
 
 /** Why the snapshot is not one this model can score. */

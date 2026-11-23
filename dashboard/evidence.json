@@ -1,0 +1,68 @@
+{
+ "measured_on": "2026-11-14",
+ "evidence_n": 121,
+ "protocol_n": 758,
+ "kfold": [
+  {
+   "term": "flat multiple, per category",
+   "fold_error": 6.41
+  },
+  {
+   "term": "plus a size curve on log TVL",
+   "fold_error": 4.64
+  },
+  {
+   "term": "plus 7-day TVL growth",
+   "fold_error": 4.64
+  },
+  {
+   "term": "plus how long it has run tokenless",
+   "fold_error": 4.55
+  }
+ ],
+ "forward": [
+  {
+   "year": 2024,
+   "n": 20,
+   "model": 6.53,
+   "with_terms": 12.59
+  },
+  {
+   "year": 2025,
+   "n": 20,
+   "model": 5.63,
+   "with_terms": 30.08
+  }
+ ],
+ "odds": [
+  {
+   "band": "under 3 months",
+   "tokenless": 16,
+   "traded": 2
+  },
+  {
+   "band": "3 to 12 months",
+   "tokenless": 34,
+   "traded": 8
+  },
+  {
+   "band": "1 to 2 years",
+   "tokenless": 73,
+   "traded": 20
+  },
+  {
+   "band": "2 to 4 years",
+   "tokenless": 73,
+   "traded": 41
+  },
+  {
+   "band": "over 4 years",
+   "tokenless": 24,
+   "traded": 19
+  }
+ ],
+ "note": "Every figure here is measured on this snapshot alone, by the entry's own lab script. A k-fold figure trains and tests on the same snapshot; a forward figure trains only on protocols listed earlier than the year it tests. The model uses a flat category multiple because no added term improved held-out error on this evidence.",
+ "kfold_note": "5-fold, folds assigned by a hash of the slug, so every traded protocol is tested exactly once. This measures whether the terms fit this snapshot; it cannot say whether they survive a later day.",
+ "forward_note": "Train on protocols listed before the test year, predict the ones listed inside it. The four-term model does far worse here than the flat one, which is why the board prices with the flat multiple: the added terms were fitting the snapshot, not the protocol.",
+ "verdict": "The board uses the flat category multiple. On this snapshot the size curve looks better in k-fold and much worse forward, and a model that only wins inside one snapshot has not been shown to work."
+}

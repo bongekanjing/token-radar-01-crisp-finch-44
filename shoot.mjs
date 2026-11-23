@@ -32,9 +32,9 @@ const port = Number(arg('--port', '8511'));
 // The board and the filtered view are shot tall enough to show the board, the benchmark table and
 // the model notes in one frame; the detail view is a drawer, so 900 px shows all of it.
 const VIEWS = [
-  ['1-board.png', '', 1180],
+  ['1-board.png', '', 1440],
   ['2-detail.png', '#p=gauntlet', 1000],
-  ['3-filtered.png', '#category=Risk%20Curators&w=1', 1180],
+  ['3-filtered.png', '#category=Risk%20Curators&w=1', 1440],
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

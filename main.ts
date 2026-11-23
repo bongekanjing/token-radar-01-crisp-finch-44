@@ -52,6 +52,17 @@ if (issue !== null) {
 
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, 'board.json'), `${JSON.stringify({ rows: board })}\n`);
+
+/**
+ * The model's backtest rides with the page, so the dashboard can print evidence the program
+ * itself did not invent. It is a committed file measured from this snapshot's traded protocols;
+ * if it is missing the page still renders, without the evidence panel.
+ */
+const evidenceFile = join(here, 'dashboard', 'evidence.json');
+if (existsSync(evidenceFile)) {
+  radar.evidence = JSON.parse(readFileSync(evidenceFile, 'utf8'));
+}
+
 writeFileSync(join(out, 'data.js'), dataScript(radar));
 
 /** Copy one directory's regular files into `to`, skipping names that start with a dot. */
